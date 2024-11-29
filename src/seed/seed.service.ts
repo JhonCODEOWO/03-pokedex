@@ -1,13 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import axios, { AxiosInstance } from 'axios';
 import { PokeResponse } from './interfaces/poke-response.interface';
-import { PokemonService } from 'src/pokemon/pokemon.service';
-import { CreatePokemonDto } from 'src/pokemon/dto/create-pokemon.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import { Pokemon } from 'src/pokemon/entities/pokemon.entity';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class SeedService {
 
-  constructor(private readonly pokemonService: PokemonService){}
+  constructor(
+    @InjectModel(Pokemon.name)
+    private readonly pokemonModel: Model<Pokemon>
+  ){}
 
   //Instancia necesaria para utiilizar axios.
   private readonly axios: AxiosInstance = axios;
@@ -23,8 +27,9 @@ export class SeedService {
       const no:number = +segments[segments.length - 2] //Tomamos la penultima posición.
 
       //Guardamos el pokemon en nuestra base de datos.
+      const pokemon = this.pokemonModel.create({name, no});
     })
 
-    return data.results;
+    return `Seed executed`;
   }
 }

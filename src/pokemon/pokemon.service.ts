@@ -6,17 +6,22 @@ import { Pokemon } from './entities/pokemon.entity';
 import { InjectModel } from '@nestjs/mongoose';
 import { json } from 'node:stream/consumers';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class PokemonService {
-
+  private defaultLimit: number;
   //Inyectar las dependencias
   constructor(
     
     @InjectModel(Pokemon.name)
-    private readonly pokemonModel: Model<Pokemon>
+    private readonly pokemonModel: Model<Pokemon>,
 
-  ){}
+    private readonly configService: ConfigService
+
+  ){
+    this.defaultLimit = configService.get<number>('defaultLimit');
+  }
 
   async create(createPokemonDto: CreatePokemonDto) {
     createPokemonDto.name = createPokemonDto.name.toLowerCase();
@@ -34,7 +39,7 @@ export class PokemonService {
   }
 
   findAll(paginationDto: PaginationDto) {
-    const {limit = 10, offset = 0} = paginationDto; //Se desestructura paginationDTo y si limit o offset no vienen se les asigna un valor por defecto.
+    const {limit = this.defaultLimit, offset = 0} = paginationDto; //Se desestructura paginationDTo y si limit o offset no vienen se les asigna un valor por defecto.
     return this.pokemonModel.find()
     .limit(limit) //Límite de elementos a devolver
     .skip(offset) //Los elementos que se van a omitir de la colección
